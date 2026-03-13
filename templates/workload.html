@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Учебная нагрузка{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start">
+  <div>
+    <div class="page-title">Учебная нагрузка</div>
+    <div class="page-subtitle">{{ entries|length }} записей назначений</div>
+  </div>
+  <a href="{{ url_for('workload_add') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Назначить нагрузку
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if entries %}
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Преподаватель</th>
+          <th>Дисциплина</th>
+          <th>Сем.</th>
+          <th>Лекции</th>
+          <th>Практика</th>
+          <th>Лаб.</th>
+          <th>Итого</th>
+          <th>Уч. год</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td>
+            <a href="{{ url_for('workload_teacher', tid=e['teacher_id']) }}"
+               style="color:var(--clr-text);text-decoration:none">
+              <strong>{{ e['teacher_name'] }}</strong>
+            </a>
+            <br><small style="color:var(--clr-muted)">{{ e['position'] }}</small>
+          </td>
+          <td>
+            {{ e['subject_name'] }}
+            {% if e['subject_code'] %}
+              <br><code style="font-size:11px">{{ e['subject_code'] }}</code>
+            {% endif %}
+          </td>
+          <td style="color:var(--clr-muted)">{{ e['semester'] }}</td>
+          <td><span class="hours-chip">{{ e['lecture_hours'] }}</span></td>
+          <td><span class="hours-chip practice">{{ e['practice_hours'] }}</span></td>
+          <td><span class="hours-chip lab">{{ e['lab_hours'] }}</span></td>
+          <td><strong>{{ e['total_hours'] }} ч</strong></td>
+          <td style="color:var(--clr-muted);font-size:12px">{{ e['academic_year'] }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{{ url_for('workload_edit', wid=e['id']) }}"
+                 class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="post" action="{{ url_for('workload_delete', wid=e['id']) }}"
+                    onsubmit="return confirm('Удалить эту запись нагрузки?')">
+                <button class="btn btn-sm" style="color:var(--clr-red);border-color:var(--clr-border)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-bar-chart-line"></i>
+      Нагрузка ещё не назначена.
+      <br><a href="{{ url_for('workload_add') }}" class="btn btn-primary mt-3">
+        Назначить первую дисциплину
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

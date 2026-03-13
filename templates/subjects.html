@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Дисциплины{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start">
+  <div>
+    <div class="page-title">Дисциплины</div>
+    <div class="page-subtitle">{{ subjects|length }} дисциплин в базе</div>
+  </div>
+  <a href="{{ url_for('subject_add') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Добавить дисциплину
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if subjects %}
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Код</th>
+          <th>Название</th>
+          <th>Описание</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in subjects %}
+        <tr>
+          <td style="color:var(--clr-muted)">{{ loop.index }}</td>
+          <td>
+            {% if s['code'] %}
+              <code>{{ s['code'] }}</code>
+            {% else %}
+              <span style="color:var(--clr-muted)">—</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ s['name'] }}</strong></td>
+          <td style="color:var(--clr-muted);font-size:13px">
+            {{ s['description'] or '—' }}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{{ url_for('subject_edit', sid=s['id']) }}"
+                 class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="post" action="{{ url_for('subject_delete', sid=s['id']) }}"
+                    onsubmit="return confirm('Удалить дисциплину «{{ s['name'] }}»?')">
+                <button class="btn btn-sm" style="color:var(--clr-red);border-color:var(--clr-border)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-journal-plus"></i>
+      Дисциплины ещё не добавлены.
+      <br><a href="{{ url_for('subject_add') }}" class="btn btn-primary mt-3">
+        Добавить первую дисциплину
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — {{ dept }}</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+</head>
+<body class="login-page">
+
+<div class="login-wrapper">
+  <div class="login-header">
+    <div class="login-badge">КАФ / ИИ</div>
+    <div class="login-title">Вход в систему</div>
+    <div class="login-subtitle">{{ dept }}</div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} mb-3">
+          <i class="bi bi-{% if cat == 'danger' %}exclamation-triangle{% elif cat == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+          {{ msg }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="login-card">
+    <form method="post" autocomplete="off">
+      <div class="mb-3">
+        <label class="form-label">Логин</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-person"></i></span>
+          <input type="text" name="username" class="form-control"
+                 placeholder="Введите логин" required autofocus>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Пароль</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input type="password" name="password" id="login-pwd" class="form-control"
+                 placeholder="Введите пароль" required>
+          <button type="button" class="input-group-text" id="login-eye-btn"
+                  style="cursor:pointer">
+            <i class="bi bi-eye" id="login-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="remember" id="remember">
+          <label class="form-check-label" for="remember">Запомнить меня</label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+      </button>
+    </form>
+  </div>
+
+  <div class="hint-box">
+    <i class="bi bi-shield-lock me-1"></i>
+    По умолчанию: <strong>admin</strong> / <strong>admin1234</strong><br>
+    Смените пароль после первого входа в разделе «Профиль».
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

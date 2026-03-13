@@ -1,0 +1,543 @@
+/* ============================================================
+   main.css — Основные стили системы управления нагрузкой
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* ── CSS-переменные (цвета) ──────────────────────────────── */
+:root {
+  --clr-bg:       #0d0f14;
+  --clr-surface:  #141720;
+  --clr-card:     #1a1e2a;
+  --clr-border:   #252a3a;
+  --clr-accent:   #4f8ef7;
+  --clr-accent2:  #7c5df9;
+  --clr-green:    #3ecf8e;
+  --clr-yellow:   #f5a623;
+  --clr-red:      #f24f4f;
+  --clr-text:     #e2e8f4;
+  --clr-muted:    #6b7a9a;
+}
+
+/* ── Сброс и базовые стили ───────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  min-height: 100vh;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar {
+  position: fixed; top: 0; left: 0;
+  width: 240px; height: 100vh;
+  background: var(--clr-surface);
+  border-right: 1px solid var(--clr-border);
+  display: flex; flex-direction: column;
+  padding: 0;
+  z-index: 100;
+}
+
+.sidebar-header {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.sidebar-logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--clr-accent);
+  margin-bottom: 6px;
+}
+
+.sidebar-title {
+  font-size: 13px;
+  color: var(--clr-muted);
+  line-height: 1.4;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--clr-muted);
+  padding: 12px 8px 6px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: var(--clr-muted);
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  margin-bottom: 2px;
+}
+
+.nav-link:hover {
+  background: var(--clr-card);
+  color: var(--clr-text);
+}
+
+.nav-link.active {
+  background: rgba(79,142,247,0.12);
+  color: var(--clr-accent);
+}
+
+.nav-link i { font-size: 16px; width: 20px; text-align: center; }
+
+/* ── Блок пользователя в сайдбаре ────────────────────────── */
+.sidebar-user {
+  border-top: 1px solid var(--clr-border);
+  padding: 14px 16px;
+}
+
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.sidebar-user-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(79,142,247,0.15);
+  border: 1px solid rgba(79,142,247,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  color: var(--clr-accent);
+  flex-shrink: 0;
+}
+
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+  font-size: 11px;
+  color: var(--clr-muted);
+}
+
+.sidebar-user-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.sidebar-user-btn {
+  flex: 1;
+  text-align: center;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--clr-muted);
+  text-decoration: none;
+  font-size: 12px;
+  border: 1px solid var(--clr-border);
+  transition: all 0.15s;
+}
+
+.sidebar-user-btn:hover {
+  background: var(--clr-card);
+  color: var(--clr-text);
+}
+
+.sidebar-user-btn.logout:hover {
+  background: rgba(242,79,79,0.1);
+  color: var(--clr-red);
+}
+
+/* ── Основной контент ────────────────────────────────────── */
+.main-content {
+  margin-left: 240px;
+  min-height: 100vh;
+  padding: 32px 36px;
+}
+
+.page-header { margin-bottom: 28px; }
+
+.page-title {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--clr-muted);
+  margin-top: 4px;
+}
+
+/* ── Карточки ────────────────────────────────────────────── */
+.card {
+  background: var(--clr-card);
+  border: 1px solid var(--clr-border);
+  border-radius: 12px;
+}
+
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--clr-border);
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.card-body { padding: 20px; }
+
+/* ── Stat-карточки ───────────────────────────────────────── */
+.stat-card {
+  background: var(--clr-card);
+  border: 1px solid var(--clr-border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.stat-card.accent::before  { background: var(--clr-accent);  }
+.stat-card.accent2::before { background: var(--clr-accent2); }
+.stat-card.green::before   { background: var(--clr-green);   }
+.stat-card.red::before     { background: var(--clr-red);     }
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--clr-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── Таблицы ─────────────────────────────────────────────── */
+.table {
+  color: var(--clr-text);
+  font-size: 14px;
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(255,255,255,0.02);
+  --bs-table-hover-bg: rgba(79,142,247,0.06);
+}
+
+.table th {
+  color: var(--clr-muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-color: var(--clr-border);
+  padding: 12px 16px;
+}
+
+.table td {
+  border-color: var(--clr-border);
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+/* ── Бейджи ──────────────────────────────────────────────── */
+.badge-position {
+  background: rgba(124,93,249,0.15);
+  color: var(--clr-accent2);
+  border: 1px solid rgba(124,93,249,0.25);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ── Прогресс-бар ────────────────────────────────────────── */
+.progress {
+  background: var(--clr-border);
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* ── Кнопки ──────────────────────────────────────────────── */
+.btn-primary {
+  background: var(--clr-accent);
+  border-color: var(--clr-accent);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.btn-primary:hover {
+  background: #3a7ef5;
+  border-color: #3a7ef5;
+}
+
+.btn-outline-secondary {
+  color: var(--clr-muted);
+  border-color: var(--clr-border);
+  font-size: 13px;
+}
+
+.btn-outline-secondary:hover {
+  background: var(--clr-card);
+  color: var(--clr-text);
+  border-color: var(--clr-border);
+}
+
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* ── Формы ───────────────────────────────────────────────── */
+.form-control,
+.form-select {
+  background: var(--clr-surface);
+  border-color: var(--clr-border);
+  color: var(--clr-text);
+  font-size: 14px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background: var(--clr-surface);
+  border-color: var(--clr-accent);
+  color: var(--clr-text);
+  box-shadow: 0 0 0 3px rgba(79,142,247,0.15);
+}
+
+.form-control::placeholder { color: var(--clr-muted); }
+
+.form-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--clr-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.form-check-label { font-size: 13px; color: var(--clr-muted); }
+
+.form-check-input {
+  background-color: var(--clr-surface);
+  border-color: var(--clr-border);
+}
+
+.form-check-input:checked {
+  background-color: var(--clr-accent);
+  border-color: var(--clr-accent);
+}
+
+.input-group-text {
+  background: var(--clr-surface);
+  border-color: var(--clr-border);
+  color: var(--clr-muted);
+}
+
+/* ── Уведомления (alerts) ────────────────────────────────── */
+.alert {
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.alert-success {
+  background: rgba(62,207,142,0.1);
+  border-color: rgba(62,207,142,0.25);
+  color: var(--clr-green);
+}
+
+.alert-danger {
+  background: rgba(242,79,79,0.1);
+  border-color: rgba(242,79,79,0.25);
+  color: var(--clr-red);
+}
+
+.alert-warning {
+  background: rgba(245,166,35,0.1);
+  border-color: rgba(245,166,35,0.25);
+  color: var(--clr-yellow);
+}
+
+.alert-info {
+  background: rgba(79,142,247,0.1);
+  border-color: rgba(79,142,247,0.25);
+  color: var(--clr-accent);
+}
+
+/* ── Цвета статусов ──────────────────────────────────────── */
+.text-success { color: var(--clr-green)  !important; }
+.text-danger  { color: var(--clr-red)    !important; }
+.text-warning { color: var(--clr-yellow) !important; }
+.text-info    { color: var(--clr-accent) !important; }
+
+.bg-success { background: var(--clr-green)  !important; }
+.bg-danger  { background: var(--clr-red)    !important; }
+.bg-warning { background: var(--clr-yellow) !important; }
+.bg-info    { background: var(--clr-accent) !important; }
+
+/* ── Прочее ──────────────────────────────────────────────── */
+hr   { border-color: var(--clr-border); }
+code { color: var(--clr-accent); font-family: 'IBM Plex Mono', monospace; }
+
+.hours-chip {
+  display: inline-block;
+  background: rgba(79,142,247,0.1);
+  border: 1px solid rgba(79,142,247,0.2);
+  color: var(--clr-accent);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.hours-chip.practice {
+  background: rgba(124,93,249,0.1);
+  border-color: rgba(124,93,249,0.2);
+  color: var(--clr-accent2);
+}
+
+.hours-chip.lab {
+  background: rgba(62,207,142,0.1);
+  border-color: rgba(62,207,142,0.2);
+  color: var(--clr-green);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--clr-muted);
+}
+
+.empty-state i { font-size: 48px; margin-bottom: 12px; display: block; }
+
+/* ── Страница входа ──────────────────────────────────────── */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-page::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(var(--clr-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--clr-border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.login-page::after {
+  content: '';
+  position: fixed;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.login-wrapper {
+  position: relative; z-index: 10;
+  width: 100%; max-width: 420px;
+  padding: 20px;
+  animation: fadeUp 0.4s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.login-header { text-align: center; margin-bottom: 32px; }
+
+.login-badge {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--clr-accent);
+  background: rgba(79,142,247,0.1);
+  border: 1px solid rgba(79,142,247,0.25);
+  padding: 5px 14px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.login-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: var(--clr-muted);
+  line-height: 1.5;
+}
+
+.login-card {
+  background: var(--clr-card);
+  border: 1px solid var(--clr-border);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+}
+
+.btn-login {
+  width: 100%;
+  background: var(--clr-accent);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 8px;
+}
+
+.btn-login:hover  { background: #3a7ef5; }
+.btn-login:active { transform: scale(0.98); }
+
+.hint-box {
+  margin-top: 20px;
+  background: rgba(79,142,247,0.06);
+  border: 1px solid rgba(79,142,247,0.15);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 12px;
+  color: var(--clr-muted);
+}
+
+.hint-box strong { color: var(--clr-accent); }

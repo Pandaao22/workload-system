@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">Мой профиль</div>
+  <div class="page-subtitle">Персональные настройки аккаунта</div>
+</div>
+
+<div class="row g-4">
+  <!-- Инфо о пользователе -->
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center" style="padding:32px 20px">
+        <div style="width:72px;height:72px;border-radius:50%;
+                    background:rgba(79,142,247,0.15);
+                    border:2px solid rgba(79,142,247,0.3);
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 16px;font-size:28px;color:var(--clr-accent)">
+          <i class="bi bi-person"></i>
+        </div>
+        <div style="font-size:18px;font-weight:600;margin-bottom:4px">
+          {{ current_user.full_name }}
+        </div>
+        <div style="font-size:13px;color:var(--clr-muted);margin-bottom:16px">
+          @{{ current_user.username }}
+        </div>
+        {% if current_user.role == 'admin' %}
+          <span style="background:rgba(242,79,79,0.12);color:var(--clr-red);
+                       border:1px solid rgba(242,79,79,0.25);
+                       padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500">
+            <i class="bi bi-shield-fill me-1"></i>Администратор
+          </span>
+        {% elif current_user.role == 'editor' %}
+          <span style="background:rgba(79,142,247,0.12);color:var(--clr-accent);
+                       border:1px solid rgba(79,142,247,0.25);
+                       padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500">
+            <i class="bi bi-pencil-square me-1"></i>Редактор
+          </span>
+        {% else %}
+          <span style="background:rgba(62,207,142,0.12);color:var(--clr-green);
+                       border:1px solid rgba(62,207,142,0.25);
+                       padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500">
+            <i class="bi bi-eye me-1"></i>Наблюдатель
+          </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Смена пароля -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-lock me-2"></i>Изменить пароль</div>
+      <div class="card-body">
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label">Текущий пароль *</label>
+            <input type="password" name="old_password" class="form-control"
+                   placeholder="Введите текущий пароль" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Новый пароль * (минимум 6 символов)</label>
+            <input type="password" name="new_password" id="new-pwd" class="form-control"
+                   placeholder="Новый пароль" required minlength="6">
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Подтвердите новый пароль *</label>
+            <input type="password" name="confirm_password" id="confirm-pwd" class="form-control"
+                   placeholder="Повторите новый пароль" required minlength="6"
+                   oninput="checkMatch()">
+            <div id="match-hint" style="font-size:11px;margin-top:4px;display:none"></div>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i>Сохранить новый пароль
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function checkMatch() {
+  const np = document.getElementById('new-pwd').value;
+  const cp = document.getElementById('confirm-pwd').value;
+  const hint = document.getElementById('match-hint');
+  if (cp.length === 0) { hint.style.display = 'none'; return; }
+  hint.style.display = 'block';
+  if (np === cp) {
+    hint.textContent = '✓ Пароли совпадают';
+    hint.style.color = 'var(--clr-green)';
+  } else {
+    hint.textContent = '✗ Пароли не совпадают';
+    hint.style.color = 'var(--clr-red)';
+  }
+}
+</script>
+{% endblock %}

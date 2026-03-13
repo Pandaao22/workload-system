@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Нагрузка кафедры ИИ{% endblock %}</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">КАФ / ИИ</div>
+    <div class="sidebar-title">Управление учебной нагрузкой</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Навигация</div>
+    <a href="{{ url_for('index') }}"
+       class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i> Обзор
+    </a>
+    <a href="{{ url_for('teachers_list') }}"
+       class="nav-link {% if 'teacher' in request.endpoint %}active{% endif %}">
+      <i class="bi bi-people"></i> Преподаватели
+    </a>
+    <a href="{{ url_for('subjects_list') }}"
+       class="nav-link {% if 'subject' in request.endpoint %}active{% endif %}">
+      <i class="bi bi-journal-text"></i> Дисциплины
+    </a>
+    <a href="{{ url_for('workload_list') }}"
+       class="nav-link {% if 'workload' in request.endpoint %}active{% endif %}">
+      <i class="bi bi-bar-chart-line"></i> Нагрузка
+    </a>
+
+    <div class="nav-section-label">Аналитика</div>
+    <a href="{{ url_for('reports_page') }}"
+       class="nav-link {% if request.endpoint == 'reports_page' %}active{% endif %}">
+      <i class="bi bi-file-earmark-bar-graph"></i> Отчёты
+    </a>
+
+    {% if current_user.is_authenticated and current_user.is_admin() %}
+    <div class="nav-section-label">Администрирование</div>
+    <a href="{{ url_for('users_list') }}"
+       class="nav-link {% if 'user' in request.endpoint %}active{% endif %}">
+      <i class="bi bi-shield-lock"></i> Пользователи
+    </a>
+    {% endif %}
+  </nav>
+  {% if current_user.is_authenticated %}
+  <div class="sidebar-user">
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-avatar">
+        <i class="bi bi-person"></i>
+      </div>
+      <div style="overflow:hidden">
+        <div class="sidebar-user-name">{{ current_user.full_name.split()[0] }}</div>
+        <div class="sidebar-user-role">
+          {% if current_user.role == 'admin' %}
+            <i class="bi bi-shield-fill" style="color:var(--clr-red)"></i> Администратор
+          {% elif current_user.role == 'editor' %}
+            <i class="bi bi-pencil-square" style="color:var(--clr-accent)"></i> Редактор
+          {% else %}
+            <i class="bi bi-eye" style="color:var(--clr-green)"></i> Наблюдатель
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-user-actions">
+      <a href="{{ url_for('profile') }}" class="sidebar-user-btn">
+        <i class="bi bi-person-gear"></i> Профиль
+      </a>
+      <a href="{{ url_for('logout') }}" class="sidebar-user-btn logout">
+        <i class="bi bi-box-arrow-right"></i> Выход
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</aside>
+<main class="main-content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show mb-4" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

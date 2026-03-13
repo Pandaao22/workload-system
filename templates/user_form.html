@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Редактировать' if action == 'edit' else 'Новый' }} пользователь{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    {{ 'Редактировать пользователя' if action == 'edit' else 'Новый пользователь' }}
+  </div>
+  <div class="page-subtitle">
+    <a href="{{ url_for('users_list') }}" style="color:var(--clr-muted);text-decoration:none">
+      <i class="bi bi-arrow-left me-1"></i>Назад к списку
+    </a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-person-gear me-2"></i>Данные пользователя</div>
+      <div class="card-body">
+        <form method="post">
+
+          {% if action == 'add' %}
+          <div class="mb-3">
+            <label class="form-label">Логин *</label>
+            <input type="text" name="username" class="form-control"
+                   placeholder="ivanov" required
+                   pattern="[a-zA-Z0-9_\-]+"
+                   title="Только латинские буквы, цифры, _ и -">
+            <div class="form-text" style="color:var(--clr-muted);font-size:11px;margin-top:4px">
+              Только латинские буквы, цифры, _ и -. Регистр не важен.
+            </div>
+          </div>
+          {% else %}
+          <div class="mb-3">
+            <label class="form-label">Логин</label>
+            <input type="text" class="form-control" value="{{ user.username }}" disabled>
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label">Полное имя *</label>
+            <input type="text" name="full_name" class="form-control"
+                   placeholder="Иванов Иван Иванович"
+                   value="{{ user.full_name if user else '' }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Роль *</label>
+            <select name="role" class="form-select">
+              {% for key, label in roles %}
+              <option value="{{ key }}"
+                {% if user and user.role == key %}selected{% endif %}>
+                {{ label }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          {% if action == 'add' %}
+          <div class="mb-3">
+            <label class="form-label">Пароль * (минимум 6 символов)</label>
+            <div class="input-group">
+              <input type="password" name="password" id="pwd" class="form-control"
+                     placeholder="Введите пароль" required minlength="6">
+              <button type="button" class="btn btn-outline-secondary" onclick="togglePwd()">
+                <i class="bi bi-eye" id="eye-ico"></i>
+              </button>
+            </div>
+          </div>
+          {% else %}
+          <!-- Редактирование: пароль необязателен -->
+          <div class="mb-3">
+            <label class="form-label">Новый пароль <span style="color:var(--clr-muted)">(оставьте пустым, чтобы не менять)</span></label>
+            <div class="input-group">
+              <input type="password" name="new_password" id="pwd" class="form-control"
+                     placeholder="Новый пароль (мин. 6 символов)" minlength="6">
+              <button type="button" class="btn btn-outline-secondary" onclick="togglePwd()">
+                <i class="bi bi-eye" id="eye-ico"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="is_active" id="is_active"
+                     {% if user.is_active %}checked{% endif %}>
+              <label class="form-check-label" for="is_active"
+                     style="font-size:13px;color:var(--clr-text)">
+                Пользователь активен
+              </label>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>
+              {{ 'Сохранить' if action == 'edit' else 'Создать пользователя' }}
+            </button>
+            <a href="{{ url_for('users_list') }}" class="btn btn-outline-secondary">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-shield me-2"></i>Уровни доступа</div>
+      <div class="card-body" style="font-size:13px;line-height:1.8">
+        <div style="margin-bottom:14px">
+          <span style="color:var(--clr-red);font-weight:600">
+            <i class="bi bi-shield-fill"></i> Администратор
+          </span><br>
+          <span style="color:var(--clr-muted)">
+            Полный доступ: управление пользователями, редактирование всех данных, просмотр отчётов.
+          </span>
+        </div>
+        <div style="margin-bottom:14px">
+          <span style="color:var(--clr-accent);font-weight:600">
+            <i class="bi bi-pencil-square"></i> Редактор
+          </span><br>
+          <span style="color:var(--clr-muted)">
+            Добавление и редактирование преподавателей, дисциплин и нагрузки. Просмотр отчётов. Без управления пользователями.
+          </span>
+        </div>
+        <div>
+          <span style="color:var(--clr-green);font-weight:600">
+            <i class="bi bi-eye"></i> Наблюдатель
+          </span><br>
+          <span style="color:var(--clr-muted)">
+            Только просмотр: таблицы преподавателей, дисциплин, нагрузки и отчётов.
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePwd() {
+  const inp = document.getElementById('pwd');
+  const ico = document.getElementById('eye-ico');
+  if (inp.type === 'password') { inp.type = 'text'; ico.className = 'bi bi-eye-slash'; }
+  else { inp.type = 'password'; ico.className = 'bi bi-eye'; }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Нагрузка: {{ teacher.full_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">{{ teacher['full_name'] }}</div>
+  <div class="page-subtitle">
+    <a href="{{ url_for('workload_list') }}" style="color:var(--clr-muted);text-decoration:none">
+      <i class="bi bi-arrow-left me-1"></i>Назад
+    </a>
+    &nbsp;·&nbsp; <span class="badge-position">{{ teacher['position'] }}</span>
+  </div>
+</div>
+
+<!-- Карточки статуса -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card accent">
+      <div class="stat-value text-info">{{ total_hours }}</div>
+      <div class="stat-label">Назначено часов</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--clr-muted)">{{ teacher['max_workload'] }}</div>
+      <div class="stat-label">Максимум часов</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card {{ status.color }}">
+      <div class="stat-value text-{{ status.color }}">{{ status.percent }}%</div>
+      <div class="stat-label">Загруженность</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-value text-{{ status.color }}" style="font-size:20px;padding-top:8px">
+        {{ status.label }}
+      </div>
+      <div class="stat-label">Статус</div>
+    </div>
+  </div>
+</div>
+
+<!-- Прогресс-бар нагрузки -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between mb-2">
+      <small style="color:var(--clr-muted)">Загруженность преподавателя</small>
+      <small style="color:var(--clr-muted)">{{ total_hours }} / {{ teacher['max_workload'] }} ч</small>
+    </div>
+    <div class="progress" style="height:10px">
+      <div class="progress-bar bg-{{ status.color }}"
+           style="width:{{ status.percent }}%;transition:width 0.5s ease"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Таблица нагрузки -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-journal-check me-2"></i>Назначенные дисциплины</span>
+    <a href="{{ url_for('workload_add') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg me-1"></i>Добавить дисциплину
+    </a>
+  </div>
+  <div class="card-body p-0">
+    {% if entries %}
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Дисциплина</th>
+          <th>Семестр</th>
+          <th>Лекции</th>
+          <th>Практика</th>
+          <th>Лаб.</th>
+          <th>Итого</th>
+          <th>Уч. год</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td>
+            <strong>{{ e['subject_name'] }}</strong>
+            {% if e['subject_code'] %}
+              <br><code style="font-size:11px">{{ e['subject_code'] }}</code>
+            {% endif %}
+          </td>
+          <td>{{ e['semester'] }}</td>
+          <td><span class="hours-chip">{{ e['lecture_hours'] }}</span></td>
+          <td><span class="hours-chip practice">{{ e['practice_hours'] }}</span></td>
+          <td><span class="hours-chip lab">{{ e['lab_hours'] }}</span></td>
+          <td><strong>{{ e['total_hours'] }} ч</strong></td>
+          <td style="color:var(--clr-muted);font-size:12px">{{ e['academic_year'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--clr-border)">
+          <td colspan="5" style="text-align:right;color:var(--clr-muted)">Итого:</td>
+          <td><strong>{{ total_hours }} ч</strong></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-journal-plus"></i>
+      Нагрузка для этого преподавателя не назначена.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

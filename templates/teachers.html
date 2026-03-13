@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Преподаватели{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start">
+  <div>
+    <div class="page-title">Преподаватели</div>
+    <div class="page-subtitle">{{ teachers|length }} сотрудников кафедры</div>
+  </div>
+  <a href="{{ url_for('teacher_add') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Добавить преподавателя
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if teachers %}
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>ФИО</th>
+          <th>Должность</th>
+          <th>Email</th>
+          <th>Макс. нагрузка</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in teachers %}
+        <tr>
+          <td style="color:var(--clr-muted)">{{ loop.index }}</td>
+          <td><strong>{{ t['full_name'] }}</strong></td>
+          <td><span class="badge-position">{{ t['position'] }}</span></td>
+          <td style="color:var(--clr-muted)">{{ t['email'] or '—' }}</td>
+          <td><span class="hours-chip">{{ t['max_workload'] }} ч</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{{ url_for('workload_teacher', tid=t['id']) }}"
+                 class="btn btn-outline-secondary btn-sm" title="Нагрузка">
+                <i class="bi bi-bar-chart-line"></i>
+              </a>
+              <a href="{{ url_for('teacher_edit', tid=t['id']) }}"
+                 class="btn btn-outline-secondary btn-sm" title="Редактировать">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="post" action="{{ url_for('teacher_delete', tid=t['id']) }}"
+                    onsubmit="return confirm('Удалить преподавателя «{{ t['full_name'] }}» и всю его нагрузку?')">
+                <button class="btn btn-sm" style="color:var(--clr-red);border-color:var(--clr-border)"
+                        title="Удалить">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-person-plus"></i>
+      Преподаватели ещё не добавлены.
+      <br><a href="{{ url_for('teacher_add') }}" class="btn btn-primary mt-3">
+        Добавить первого
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Вход — {{ dept }}</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon_32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon_16.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon_64.png') }}">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
@@ -63,12 +68,6 @@
         <i class="bi bi-box-arrow-in-right me-2"></i>Войти
       </button>
     </form>
-  </div>
-
-  <div class="hint-box">
-    <i class="bi bi-shield-lock me-1"></i>
-    По умолчанию: <strong>admin</strong> / <strong>admin1234</strong><br>
-    Смените пароль после первого входа в разделе «Профиль».
   </div>
 </div>
 

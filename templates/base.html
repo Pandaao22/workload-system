@@ -4,13 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Нагрузка кафедры ИИ{% endblock %}</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon_32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon_16.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon_64.png') }}">
+
+  <!-- Bootstrap CSS -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Основные стили проекта -->
   <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
 
   {% block head %}{% endblock %}
 </head>
 <body>
+
+<!-- ── Мобильная шапка (только на телефонах) ────────────── -->
+<header class="mobile-topbar">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()" id="menu-btn">
+    <i class="bi bi-list" id="menu-icon"></i>
+  </button>
+  <div class="mobile-title">КАФ / ИИ</div>
+  {% if current_user.is_authenticated %}
+  <a href="{{ url_for('profile') }}" class="mobile-avatar">
+    <i class="bi bi-person"></i>
+  </a>
+  {% else %}
+  <div style="width:36px"></div>
+  {% endif %}
+</header>
+
+<!-- ── Оверлей (затемнение при открытом меню) ───────────── -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- ── Sidebar ──────────────────────────────────────── -->
 <aside class="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">КАФ / ИИ</div>
@@ -19,37 +49,43 @@
 
   <nav class="sidebar-nav">
     <div class="nav-section-label">Навигация</div>
-    <a href="{{ url_for('index') }}"
+    <a href="{{ url_for('index') }}" onclick="closeSidebar()"
        class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
       <i class="bi bi-speedometer2"></i> Обзор
     </a>
-    <a href="{{ url_for('teachers_list') }}"
+    <a href="{{ url_for('teachers_list') }}" onclick="closeSidebar()"
        class="nav-link {% if 'teacher' in request.endpoint %}active{% endif %}">
       <i class="bi bi-people"></i> Преподаватели
     </a>
-    <a href="{{ url_for('subjects_list') }}"
+    <a href="{{ url_for('subjects_list') }}" onclick="closeSidebar()"
        class="nav-link {% if 'subject' in request.endpoint %}active{% endif %}">
       <i class="bi bi-journal-text"></i> Дисциплины
     </a>
-    <a href="{{ url_for('workload_list') }}"
+    <a href="{{ url_for('workload_list') }}" onclick="closeSidebar()"
        class="nav-link {% if 'workload' in request.endpoint %}active{% endif %}">
       <i class="bi bi-bar-chart-line"></i> Нагрузка
     </a>
 
     <div class="nav-section-label">Аналитика</div>
-    <a href="{{ url_for('reports_page') }}"
+    <a href="{{ url_for('reports_page') }}" onclick="closeSidebar()"
        class="nav-link {% if request.endpoint == 'reports_page' %}active{% endif %}">
       <i class="bi bi-file-earmark-bar-graph"></i> Отчёты
+    </a>
+    <a href="{{ url_for('ai_page') }}" onclick="closeSidebar()"
+       class="nav-link {% if 'ai' in request.endpoint %}active{% endif %}">
+      <i class="bi bi-stars"></i> ИИ-ассистент
     </a>
 
     {% if current_user.is_authenticated and current_user.is_admin() %}
     <div class="nav-section-label">Администрирование</div>
-    <a href="{{ url_for('users_list') }}"
+    <a href="{{ url_for('users_list') }}" onclick="closeSidebar()"
        class="nav-link {% if 'user' in request.endpoint %}active{% endif %}">
       <i class="bi bi-shield-lock"></i> Пользователи
     </a>
     {% endif %}
   </nav>
+
+  <!-- Блок текущего пользователя -->
   {% if current_user.is_authenticated %}
   <div class="sidebar-user">
     <div class="sidebar-user-info">
@@ -80,6 +116,8 @@
   </div>
   {% endif %}
 </aside>
+
+<!-- ── Основной контент ──────────────────────────────── -->
 <main class="main-content">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -95,9 +133,56 @@
   {% block content %}{% endblock %}
 </main>
 
+<!-- Bootstrap JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<!-- Основные скрипты проекта -->
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 {% block scripts %}{% endblock %}
+
+<!-- ── ИИ-виджет ─────────────────────────────────────────── -->
+{% if current_user.is_authenticated %}
+<button class="ai-btn" onclick="toggleAI()" title="ИИ-ассистент">
+  <i class="bi bi-stars"></i>
+  <span class="ai-badge">ИИ</span>
+</button>
+
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-header">
+    <div class="ai-avatar"><i class="bi bi-stars"></i></div>
+    <div class="ai-header-info">
+      <div class="ai-header-name">ИИ-ассистент кафедры</div>
+      <div class="ai-header-status">● Онлайн — знает данные кафедры</div>
+    </div>
+    <button class="ai-close-btn" onclick="toggleAI()">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg bot">
+      Привет! 👋 Я ИИ-ассистент кафедры ИИ.<br><br>
+      Знаю всех преподавателей, их нагрузку и дисциплины. Спросите меня о чём угодно!
+    </div>
+  </div>
+
+  <div class="ai-suggestions" id="ai-suggestions">
+    <button class="ai-suggest-btn" onclick="sendSuggestion('Кто перегружен?')">Кто перегружен?</button>
+    <button class="ai-suggest-btn" onclick="sendSuggestion('Покажи сводку по нагрузке')">Сводка нагрузки</button>
+    <button class="ai-suggest-btn" onclick="sendSuggestion('У кого мало часов?')">Мало часов</button>
+    <button class="ai-suggest-btn" onclick="sendSuggestion('Дай рекомендации по распределению')">Рекомендации</button>
+  </div>
+
+  <div class="ai-input-area">
+    <textarea class="ai-input" id="ai-input" rows="1"
+      placeholder="Спросите о нагрузке, расписании..."
+      onkeydown="handleAIKey(event)"
+      oninput="autoResize(this)"></textarea>
+    <button class="ai-send-btn" id="ai-send" onclick="sendAIMessage()">
+      <i class="bi bi-send-fill"></i>
+    </button>
+  </div>
+</div>
+{% endif %}
 </body>
 </html>

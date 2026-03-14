@@ -2,7 +2,7 @@
 # main.py — Основной файл запуска Flask-приложения
 # ============================================================
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import (LoginManager, login_user, logout_user,
                          login_required, current_user)
 from functools import wraps
@@ -428,6 +428,297 @@ def profile():
             flash("Пароль изменён успешно.", "success")
             return redirect(url_for("index"))
     return render_template("profile.html", dept=DEPARTMENT_NAME)
+
+
+# ════════════════════════════════════════════════════════════
+# ИИ-АССИСТЕНТ
+# ════════════════════════════════════════════════════════════
+from ai_engine import ai
+from utils import workload_status
+
+def _generate_chat_reply(msg, teachers, anomalies, recs, summary):
+    """Генерирует ответ чат-бота — отвечает на любые вопросы."""
+    msg_lower = msg.lower()
+
+    # ── Приветствие ──────────────────────────────────────────
+    if any(w in msg_lower for w in ['привет', 'здравствуй', 'салам', 'hello', 'hi']):
+        return (
+            "👋 Привет! Я ИИ-ассистент кафедры ИИ.\n\n"
+            "Знаю всё о нагрузке преподавателей и могу ответить на любые вопросы — "
+            "как по кафедре, так и на общие темы. Спрашивайте!"
+        )
+
+    # ── Что умеешь ───────────────────────────────────────────
+    if any(w in msg_lower for w in ['что умеешь', 'что можешь', 'помог', 'помощь']):
+        return (
+            "🤖 Я умею:\n\n"
+            "📊 По кафедре:\n"
+            "• Показать сводку по нагрузке\n"
+            "• Найти перегруженных / недогруженных\n"
+            "• Дать рекомендации по распределению\n"
+            "• Рассказать о конкретном преподавателе\n"
+            "• Оценить баланс кафедры\n\n"
+            "💬 На общие темы:\n"
+            "• Ответить на вопросы по программированию\n"
+            "• Объяснить понятия из ИИ и науки\n"
+            "• Помочь с расчётами и логикой\n"
+            "• Поддержать разговор на любую тему"
+        )
+
+    # ── Перегрузка ───────────────────────────────────────────
+    if any(w in msg_lower for w in ['перегруж', 'превыш', 'много часов']):
+        overloaded = [a for a in anomalies if a['type'] == 'overload']
+        if overloaded:
+            details = '\n'.join(f"• {a['teacher']}: {a['message']}" for a in overloaded)
+            return f"⚠️ Перегруженных преподавателей: {len(overloaded)}\n\n{details}\n\nРекомендую перераспределить нагрузку."
+        return "✅ Перегруженных преподавателей нет — нагрузка в пределах нормы."
+
+    # ── Недогрузка ───────────────────────────────────────────
+    if any(w in msg_lower for w in ['мало часов', 'недогруж', 'низкая нагрузк', 'свободн']):
+        underloaded = [a for a in anomalies if a['type'] in ['underload', 'low']]
+        if underloaded:
+            details = '\n'.join(f"• {a['teacher']}: {a['message']}" for a in underloaded)
+            return f"📉 Преподаватели с низкой нагрузкой:\n\n{details}"
+        return "✅ Все преподаватели загружены достаточно."
+
+    # ── Сводка ───────────────────────────────────────────────
+    if any(w in msg_lower for w in ['сводк', 'статистик', 'обзор', 'итог', 'всего', 'покажи нагрузк']):
+        lines = ["📊 Сводка по кафедре:\n"]
+        lines.append(f"• Преподавателей: {summary['teachers']}")
+        lines.append(f"• Дисциплин: {summary['subjects']}")
+        lines.append(f"• Всего часов: {summary['total_hours']} / {summary['total_max']} ч")
+        lines.append(f"• Загруженность кафедры: {summary['dept_pct']}%")
+        lines.append(f"• Проблем обнаружено: {len(anomalies)}")
+        return '\n'.join(lines)
+
+    # ── Конкретный преподаватель ─────────────────────────────
+    for t in teachers:
+        name_parts = t['full_name'].lower().split()
+        if any(part in msg_lower for part in name_parts if len(part) > 3):
+            st = workload_status(t['total_hours'], t['max_workload'])
+            return (
+                f"👤 {t['full_name']}\n"
+                f"• Должность: {t['position']}\n"
+                f"• Нагрузка: {t['total_hours']} / {t['max_workload']} ч\n"
+                f"• Загруженность: {st['percent']}% — {st['label']}\n"
+                f"• Дисциплин: {t.get('subject_count', '—')}"
+            )
+
+    # ── Рекомендации ─────────────────────────────────────────
+    if any(w in msg_lower for w in ['рекоменд', 'совет', 'предложи', 'как распредел']):
+        high   = [r for r in recs if r['priority'] == 'high']
+        medium = [r for r in recs if r['priority'] == 'medium']
+        lines  = ["💡 Рекомендации ИИ:\n"]
+        for r in (high + medium)[:4]:
+            icon = '🔴' if r['priority'] == 'high' else '🟡'
+            lines.append(f"{icon} {r['teacher']}: {r['message']}")
+        if not high and not medium:
+            lines.append("✅ Нагрузка распределена оптимально.")
+        return '\n'.join(lines)
+
+    # ── Список преподавателей ────────────────────────────────
+    if any(w in msg_lower for w in ['список', 'преподавател', 'сотрудник', 'кто работает']):
+        lines = [f"👥 Преподаватели кафедры ({len(teachers)}):\n"]
+        for t in teachers:
+            st   = workload_status(t['total_hours'], t['max_workload'])
+            icon = '🔴' if t['total_hours'] > t['max_workload'] else ('🟡' if st['percent'] < 60 else '🟢')
+            lines.append(f"{icon} {t['full_name']} — {t['position']} ({st['percent']}%)")
+        return '\n'.join(lines)
+
+    # ── Баланс ───────────────────────────────────────────────
+    if any(w in msg_lower for w in ['баланс', 'оценк', 'состояни', 'как дела']):
+        dash_data = ai.get_dashboard()
+        score     = dash_data['balance_score']
+        verdict   = ("Отличный баланс! 🎉" if score >= 70
+                     else "Умеренно сбалансирована, есть что улучшить." if score >= 40
+                     else "Нагрузка неравномерна, требует внимания.")
+        return (f"📈 Оценка баланса кафедры: {score}/100\n\n{verdict}\n\n"
+                f"Проблем: {len(anomalies)}, критических: {len([a for a in anomalies if a['severity']=='high'])}.")
+
+    # ── Общие знания — программирование ─────────────────────
+    if any(w in msg_lower for w in ['python', 'питон', 'код', 'программ', 'функци', 'алгоритм']):
+        return (
+            "🐍 Python — отличный выбор!\n\n"
+            "Могу помочь с:\n"
+            "• Объяснением синтаксиса и концепций\n"
+            "• Разбором алгоритмов и структур данных\n"
+            "• Написанием функций и классов\n"
+            "• Отладкой кода\n\n"
+            "Задайте конкретный вопрос или скиньте код — разберём вместе!"
+        )
+
+    # ── Общие знания — искусственный интеллект ──────────────
+    if any(w in msg_lower for w in ['машинное обучение', 'нейронн', 'deep learning', 'нейросет', 'gpt', 'llm', 'искусственный интеллект']):
+        return (
+            "🧠 Искусственный интеллект — моя специальность!\n\n"
+            "Популярные темы:\n"
+            "• Машинное обучение (supervised/unsupervised)\n"
+            "• Нейронные сети и глубокое обучение\n"
+            "• Трансформеры и языковые модели (GPT, BERT)\n"
+            "• Компьютерное зрение и NLP\n"
+            "• Обучение с подкреплением\n\n"
+            "Что конкретно вас интересует?"
+        )
+
+    # ── Математика / расчёты ─────────────────────────────────
+    if any(w in msg_lower for w in ['посчитай', 'вычисли', 'сколько будет', 'математик', 'формул']):
+        # Простые вычисления
+        import re
+        expr = re.sub(r'[^\d\+\-\*\/\.\(\)\s]', '', msg)
+        expr = expr.strip()
+        if expr:
+            try:
+                result = eval(expr, {"__builtins__": {}})
+                return f"🔢 Результат: {expr} = {result}"
+            except:
+                pass
+        return (
+            "🔢 Для расчётов напишите выражение, например:\n"
+            "• «посчитай 180 + 162 + 90»\n"
+            "• «сколько будет 900 * 4»\n\n"
+            "Или задайте математический вопрос — отвечу!"
+        )
+
+    # ── Время / дата ─────────────────────────────────────────
+    if any(w in msg_lower for w in ['какой год', 'какое число', 'дата', 'сегодня']):
+        from datetime import datetime
+        now = datetime.now()
+        return f"📅 Сегодня: {now.strftime('%d.%m.%Y')}, {now.strftime('%H:%M')}"
+
+    # ── Шутка ────────────────────────────────────────────────
+    if any(w in msg_lower for w in ['расскажи шутку', 'пошути', 'анекдот', 'смешно']):
+        import random
+        jokes = [
+            "Почему программисты путают Хэллоуин и Рождество?\nПотому что Oct 31 == Dec 25! 🎃",
+            "— Сынок, иди спать, уже 11 вечера.\n— Подожди, мам, я почти починил баг.\n— Утро. — Ладно, иди завтракай.\n— Подожди, мам, я почти починил баг. 😅",
+            "Нейросеть — это как стажёр: уверенно отвечает, иногда ошибается, но никогда не признаётся. 🤖",
+        ]
+        return random.choice(jokes)
+
+    # ── Как дела / настроение ────────────────────────────────
+    if any(w in msg_lower for w in ['как дела', 'как ты', 'ты живой', 'ты робот']):
+        return (
+            "😊 Всё отлично, спасибо что спросили!\n\n"
+            "Я ИИ-ассистент кафедры — постоянно анализирую данные, "
+            "слежу за нагрузкой преподавателей и готов ответить на любой вопрос. "
+            "Чем могу помочь?"
+        )
+
+    # ── Ответ по умолчанию — на любой вопрос ────────────────
+    return (
+        f"💬 Понял ваш вопрос. Дам что могу на основе своих знаний.\n\n"
+        f"Если вопрос касается кафедры — уточните, например:\n"
+        f"«Покажи нагрузку», «Кто перегружен?», «Рекомендации».\n\n"
+        f"Если это общий вопрос — задайте его конкретнее и я постараюсь помочь!"
+    )
+
+@app.route("/ai")
+@login_required
+def ai_page():
+    dash = ai.get_dashboard()
+    return render_template("ai.html", dash=dash, dept=DEPARTMENT_NAME)
+
+@app.route("/ai/retrain", methods=["POST"])
+@login_required
+def ai_retrain():
+    ai.retrain()
+    flash("ИИ успешно переобучен на актуальных данных кафедры!", "success")
+    return redirect(url_for("ai_page"))
+
+@app.route("/ai/find-teacher")
+@login_required
+def ai_find_teacher():
+    hours   = int(request.args.get("hours", 72))
+    results = ai.find_best_teacher(hours)
+    return jsonify({"results": results})
+
+@app.route("/ai/predict")
+@login_required
+def ai_predict():
+    position = request.args.get("position", "Доцент")
+    hours    = int(request.args.get("hours", 72))
+    result   = ai.predict_for_position(position, hours)
+    return jsonify(result)
+
+@app.route("/ai/chat", methods=["POST"])
+@login_required
+def ai_chat():
+    """Чат-бот на базе Groq API — отвечает на любые вопросы."""
+    from config import GROQ_API_KEY
+    from groq import Groq
+
+    data     = request.get_json(silent=True) or {}
+    user_msg = (data.get("message") or "").strip()
+    history  = data.get("history") or []
+
+    if not user_msg:
+        return jsonify({"error": "Пустой запрос"}), 400
+
+    if not GROQ_API_KEY:
+        return jsonify({"reply": (
+            "⚠️ API ключ Groq не настроен.\n\n"
+            "Получите бесплатный ключ на https://console.groq.com\n"
+            "Затем запустите: set GROQ_API_KEY=gsk_..."
+        )})
+
+    # Собираем актуальные данные кафедры для контекста
+    dash     = ai.get_dashboard()
+    teachers = dash["teachers"]
+    anomalies = dash["anomalies"]
+    summary  = dash["summary"]
+
+    teacher_lines = []
+    for t in teachers:
+        st = workload_status(t["total_hours"], t["max_workload"])
+        teacher_lines.append(
+            f"- {t['full_name']} ({t['position']}): "
+            f"{t['total_hours']}/{t['max_workload']} ч, {st['percent']}% — {st['label']}"
+        )
+
+    anomaly_lines = [f"- {a['teacher']}: {a['message']}" for a in anomalies] or ["- Проблем не обнаружено"]
+
+    system_prompt = f"""Ты — умный ИИ-ассистент кафедры технологий искусственного интеллекта.
+Отвечай на русском языке. Будь дружелюбным, конкретным и полезным.
+Отвечай на ЛЮБЫЕ вопросы — как по кафедре, так и на общие темы (наука, программирование, математика, жизнь и т.д.).
+
+АКТУАЛЬНЫЕ ДАННЫЕ КАФЕДРЫ (обновляются в реальном времени):
+Преподавателей: {summary['teachers']}, дисциплин: {summary['subjects']}
+Всего часов: {summary['total_hours']}/{summary['total_max']} ч ({summary['dept_pct']}% загруженность)
+Баланс кафедры: {dash['balance_score']}/100
+
+ПРЕПОДАВАТЕЛИ И НАГРУЗКА:
+{chr(10).join(teacher_lines)}
+
+ОБНАРУЖЕННЫЕ ПРОБЛЕМЫ:
+{chr(10).join(anomaly_lines)}
+
+Когда отвечаешь на вопросы о кафедре — используй эти данные. На общие вопросы отвечай из своих знаний."""
+
+    # Строим историю сообщений
+    messages = [{"role": "system", "content": system_prompt}]
+    for m in history[-10:]:
+        if m.get("role") in ("user", "assistant"):
+            messages.append({"role": m["role"], "content": m["content"]})
+    messages.append({"role": "user", "content": user_msg})
+
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            max_tokens=1024,
+            temperature=0.7,
+        )
+        reply = response.choices[0].message.content
+        return jsonify({"reply": reply})
+
+    except Exception as e:
+        err = str(e)
+        if "401" in err or "invalid_api_key" in err.lower():
+            return jsonify({"reply": "⚠️ Неверный API ключ Groq. Проверьте GROQ_API_KEY."})
+        if "rate_limit" in err.lower():
+            return jsonify({"reply": "⚠️ Превышен лимит запросов Groq. Попробуйте через минуту."})
+        return jsonify({"reply": f"⚠️ Ошибка Groq API: {err[:200]}"})
 
 
 # ════════════════════════════════════════════════════════════

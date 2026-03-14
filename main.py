@@ -14,6 +14,8 @@ import subjects as sub
 import workload  as wld
 import reports   as rep
 import auth      as au
+from dotenv import load_dotenv
+load_dotenv()
 from utils import workload_status
 
 app = Flask(__name__)
